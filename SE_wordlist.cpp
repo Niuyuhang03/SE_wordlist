@@ -84,7 +84,8 @@ bool gen_tree(node* cur_node, char* words[], int len, bool enable_loop) {
 
 /*
 * 计算最多单词数量的最长单词链
-* head和tail无约束时为0，不允许成环时enable_loop为false
+* head和tail无约束时为0，不允许成环时enable_loop为false。
+* enable_loop为false时，若出现环，返回0。否则返回环长度。
 */
 int gen_chain_word(char* words[], int len, char* result[], char head, char tail, bool enable_loop) {
 	// TODO:generate tree, find chain which has max words
@@ -106,7 +107,8 @@ int gen_chain_word(char* words[], int len, char* result[], char head, char tail,
 
 /*
 * 计算最多字母数量的最长单词链
-* head和tail无约束时为0，不允许成环时enable_loop为false
+* head和tail无约束时为0，不允许成环时enable_loop为false。
+* enable_loop为false时，若出现环，返回0。否则返回环长度。
 */
 int gen_chain_char(char* words[], int len, char* result[], char head, char tail, bool enable_loop) {
 	// TODO:generate tree, find chain which has max characters
@@ -120,39 +122,63 @@ void handle_command() {
 	string command, file_name;
 	char head = 0, tail = 0;
 	char *words[10000], *result[10000];
-	bool enable_loop = false, word_style = true;
+	bool enable_loop = false, w_command = false, c_command = false, h_command = false, t_command = false, error_flag = false;
 	int index, len;
-	cin >> command;
-	// 解析指令
+	getline(cin, command);
 	for (index = 0; index < command.size(); index++) {
+		if (error_flag) {
+			break;
+		}
 		if (command[index] == '-') {
 			index++;
 			// TODO:handle error
 			switch (command[index]) {
 				case('w'): {
+					if (w_command | c_command) {
+						error_flag = true;
+					}
+					w_command = true;
 					index++;
 					break;
 				}
 				case('c'): {
-					word_style = false;
+					if (w_command | c_command) {
+						error_flag = true;
+					}
+					c_command = true;
 					index++;
 					break;
 				}
 				case('h'): {
+					if (h_command) {
+						error_flag = true;
+					}
+					h_command = true;
 					index += 2;
 					head = command[index];
 					index++;
 					break;
 				}
 				case('t'): {
+					if (t_command) {
+						error_flag = true;
+					}
+					t_command = true;
 					index += 2;
 					tail = command[index];
 					index++;
 					break;
 				}
 				case('r'): {
+					if (enable_loop) {
+						error_flag = true;
+					}
 					enable_loop = true;
 					index++;
+					break;
+				}
+				default: {
+					error_flag = true;
 					break;
 				}
 			}
@@ -162,8 +188,20 @@ void handle_command() {
 			break;
 		}
 	}
+	if (!(w_command | c_command)) {
+		error_flag = true;
+	}
+	if (error_flag) {
+		cout << "error exists in command!\n";
+		return;
+	}
 	// 解析文件
 	ifstream in(file_name);
+	if (!in) {
+		error_flag = true;
+		cout << "file doesn't exist!\n";
+		return;
+	}
 	ostringstream buffer;
 	buffer << in.rdbuf();
 	string contents(buffer.str());
@@ -178,7 +216,7 @@ void handle_command() {
 	//words[3] = tmp4;
 	//len = 4;
 
-	if (word_style) {
+	if (w_command) {
 		gen_chain_word(words, len, result, head, tail, enable_loop);
 	}
 	else {
