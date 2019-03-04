@@ -28,7 +28,10 @@ node::node(char* cur_word, int cur_word_num, int cur_character_num) {
 }
 
 /*
-* 在cur_node所在链上找是否出现过word，出现过则返回true
+* 在cur_node所在链上找是否出现过word
+* param:cur_node：当前节点
+* param:word：要查找的单词
+* return:word出现在cur_node所在链上返回true，否则返回false
 */
 bool find_in_chain(node* cur_node, char* word) {
 	while (cur_node != NULL) {
@@ -41,14 +44,18 @@ bool find_in_chain(node* cur_node, char* word) {
 }
 
 /*
-* 递归生成树，返回循环标志loop_flag。如果loop_flag为true，不再生成。
+* 递归生成树
+* param:cur_node：当前节点
+* param:words：文件中所有单词列表
+* param:len：文件中所有单词数量
+* param:enable_loop：是否允许出现环标志
+* return：出现环标志，出现则返回true，不再生成树。否则返回false
 */
 bool gen_tree(node* cur_node, char* words[], int len, bool enable_loop) {
 	node *temp_root;
-	char cur_tail;
+	char cur_tail = cur_node->word[strlen(cur_node->word) - 1];
 	int j;
 	bool find_node, loop_flag = false;
-	cur_tail = cur_node->word[strlen(cur_node->word) - 1];
 	for (j = 0; j < len; j++) {
 		if (loop_flag) {
 			return loop_flag;
@@ -84,11 +91,15 @@ bool gen_tree(node* cur_node, char* words[], int len, bool enable_loop) {
 
 /*
 * 计算最多单词数量的最长单词链
-* head和tail无约束时为0，不允许成环时enable_loop为false。
-* enable_loop为false时，若出现环，返回0。否则返回环长度。
+* param:words：文件中所有单词列表
+* param:len：文件中所有单词数量
+* param:result：最长链结果列表
+* param:head：要求开头字母，无要求是为0
+* param:tail：要求结尾字母，无要求是为0
+* param:enable_loop：是否允许出现环标志，不允许成环时为false，否则为true
+* return：若没有链或enable_loop为false时出现环，返回0。否则返回环长度
 */
 int gen_chain_word(char* words[], int len, char* result[], char head, char tail, bool enable_loop) {
-	// TODO:generate tree, find chain which has max words
 	int max_length = 0, cur_length = 0, i, root_node_cnt = 0;
 	node *root_node = NULL;
 	node* root_node_list[10000];
@@ -107,8 +118,13 @@ int gen_chain_word(char* words[], int len, char* result[], char head, char tail,
 
 /*
 * 计算最多字母数量的最长单词链
-* head和tail无约束时为0，不允许成环时enable_loop为false。
-* enable_loop为false时，若出现环，返回0。否则返回环长度。
+* param:words：文件中所有单词列表
+* param:len：文件中所有单词数量
+* param:result：最长链结果列表
+* param:head：要求开头字母，无要求是为0
+* param:tail：要求结尾字母，无要求是为0
+* param:enable_loop：是否允许出现环标志，不允许成环时为false，否则为true
+* return：若没有链或enable_loop为false时出现环，返回0。否则返回环长度
 */
 int gen_chain_char(char* words[], int len, char* result[], char head, char tail, bool enable_loop) {
 	// TODO:generate tree, find chain which has max characters
@@ -131,7 +147,6 @@ void handle_command() {
 		}
 		if (command[index] == '-') {
 			index++;
-			// TODO:handle error
 			switch (command[index]) {
 				case('w'): {
 					if (w_command | c_command) {
@@ -205,7 +220,7 @@ void handle_command() {
 	ostringstream buffer;
 	buffer << in.rdbuf();
 	string contents(buffer.str());
-	// TODO:get words(type:char**) and len from contents(type:string)
+	// TODO:get words(type:char**) and len from contents(type:string), one word exists once
 	//char tmp1[50] = "apple";
 	//words[0] = tmp1;
 	//char tmp2[50] = "team";
