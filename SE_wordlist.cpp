@@ -49,18 +49,17 @@ bool find_in_chain(node* cur_node, char* word) {
 * param:words：文件中所有单词列表
 * param:len：文件中所有单词数量
 * param:enable_loop：是否允许出现环标志
-* return：出现环标志，出现则返回true，不再生成树。否则返回false
+* return：出现环标志，enable_loop为false且出现环则返回true，不再生成树。否则返回false
 */
 bool gen_tree(node* cur_node, char* words[], int len, bool enable_loop) {
 	node *temp_root;
-	char cur_tail = cur_node->word[strlen(cur_node->word) - 1];
+	char cur_tail = (char)tolower(cur_node->word[strlen(cur_node->word) - 1]);
 	int j;
 	bool find_node, loop_flag = false;
 	for (j = 0; j < len; j++) {
-		if (loop_flag) {
+		if (loop_flag)
 			return loop_flag;
-		}
-		if (words[j][0] == cur_tail) {
+		if ((char)tolower(words[j][0]) == cur_tail) {
 			find_node = find_in_chain(cur_node, words[j]);
 			if (find_node == true && enable_loop == false) {
 				cout << "loop exists!\n";
@@ -76,9 +75,8 @@ bool gen_tree(node* cur_node, char* words[], int len, bool enable_loop) {
 				}
 				else {
 					temp_root = cur_node->first_child;
-					while (temp_root->next != NULL) {
+					while (temp_root->next != NULL)
 						temp_root = temp_root->next;
-					}
 					temp_root->next = new node(words[j], cur_node->word_num + 1, cur_node->character_num + strlen(words[j]));
 					temp_root->next->parent = cur_node;
 					loop_flag = gen_tree(temp_root->next, words, len, enable_loop);
@@ -132,106 +130,174 @@ int gen_chain_char(char* words[], int len, char* result[], char head, char tail,
 }
 
 /*
-* 处理指令
+* 指令合法性检查
+* param:argc：指令项目个数
+* param:argv：指令二维数组
+* return：指令是否合法，若合法返回true，否则返回false
 */
-void handle_command() {
-	string command, file_name;
-	char head = 0, tail = 0;
-	char *words[10000], *result[10000];
-	bool enable_loop = false, w_command = false, c_command = false, h_command = false, t_command = false, error_flag = false;
-	int index, len;
-	getline(cin, command);
-	for (index = 0; index < command.size(); index++) {
-		if (error_flag) {
+bool command_check(int argc, char* argv[]) {
+	bool r_para = false, w_para = false, c_para = false, h_para = false, t_para = false, error_flag = false;
+	int index;
+	for (index = 1; index < argc; index++) {
+		if (error_flag)
 			break;
-		}
-		if (command[index] == '-') {
-			index++;
-			switch (command[index]) {
+		if (argv[index][0] == '-' && index != argc - 1 && strlen(argv[index]) == 2) {
+			switch (argv[index][1]) {
 				case('w'): {
-					if (w_command | c_command) {
+					if (w_para | c_para) {
 						error_flag = true;
+						cout << "-w or -c already exists!\n";
+						return false;
 					}
-					w_command = true;
-					index++;
+					else
+						w_para = true;
 					break;
 				}
 				case('c'): {
-					if (w_command | c_command) {
+					if (w_para | c_para) {
 						error_flag = true;
+						cout << "-w or -c already exists!\n";
+						return false;
 					}
-					c_command = true;
-					index++;
+					else
+						c_para = true;
 					break;
 				}
 				case('h'): {
-					if (h_command) {
+					if (h_para) {
 						error_flag = true;
+						cout << "-h already exists!\n";
+						return false;
 					}
-					h_command = true;
-					index += 2;
-					head = command[index];
-					index++;
+					else if (index + 1 == argc - 1 || strlen(argv[index + 1]) > 1) {
+						error_flag = true;
+						cout << "there's no head character or file name!\n";
+						return false;
+					}
+					else {
+						index++;
+						h_para = true;
+					}
 					break;
 				}
 				case('t'): {
-					if (t_command) {
+					if (t_para) {
 						error_flag = true;
+						cout << "-t already exists!\n";
+						return false;
 					}
-					t_command = true;
-					index += 2;
-					tail = command[index];
-					index++;
+					else if (index + 1 == argc - 1 || strlen(argv[index + 1]) > 1) {
+						error_flag = true;
+						cout << "there's no tail character or file name!\n";
+						return false;
+					}
+					else {
+						index++;
+						t_para = true;
+					}
 					break;
 				}
 				case('r'): {
-					if (enable_loop) {
+					if (r_para) {
 						error_flag = true;
+						cout << "-r already exists!\n";
+						return false;
 					}
-					enable_loop = true;
-					index++;
+					else
+						r_para = true;
 					break;
 				}
 				default: {
 					error_flag = true;
+					cout << "parameter invalid!\n";
+					return false;
+				}
+			}
+		}
+		else if (index == argc - 1) {
+			string file_name = argv[index];
+			ifstream in(file_name);
+			if (!in) {
+				error_flag = true;
+				cout << "file doesn't exist!\n";
+				return false;
+			}
+		}
+		else {
+			error_flag = true;
+			cout << "file name already exists!\n";
+			return false;
+		}
+	}
+	if (!(w_para | c_para)) {
+		error_flag = true;
+		cout << "-w and -c all miss!\n";
+		return false;
+	}
+	return true;
+}
+
+/*
+* 解析指令
+* param:argc：指令项目个数
+* param:argv：指令二维数组
+* param:words：单词数组
+*/
+void command_handler(int argc, char* argv[]) {
+	char *result[10000], *words[10000];
+	char head, tail;
+	int len, index;
+	bool enable_loop, w_para = false;
+	string file_name = argv[argc - 1];
+
+	for (index = 1; index < argc - 1; index++) {
+		if (argv[index][0] == '-') {
+			switch (argv[index][1]) {
+				case('w'): {
+					w_para = true;
+					break;
+				}
+				case('c'): {
+					break;
+				}
+				case('h'): {
+					index++;
+					head = argv[index][0];
+					break;
+				}
+				case('t'): {
+					index++;
+					tail = argv[index][0];
+					break;
+				}
+				case('r'): {
+					enable_loop = true;
 					break;
 				}
 			}
 		}
-		else {
-			file_name = command.substr(index);
-			break;
-		}
 	}
-	if (!(w_command | c_command)) {
-		error_flag = true;
-	}
-	if (error_flag) {
-		cout << "error exists in command!\n";
-		return;
-	}
-	// 解析文件
+
 	ifstream in(file_name);
-	if (!in) {
-		error_flag = true;
-		cout << "file doesn't exist!\n";
-		return;
-	}
 	ostringstream buffer;
 	buffer << in.rdbuf();
 	string contents(buffer.str());
-	// TODO:get words(type:char**) and len from contents(type:string), one word exists once
-	//char tmp1[50] = "apple";
-	//words[0] = tmp1;
-	//char tmp2[50] = "team";
-	//words[1] = tmp2;
-	//char tmp3[50] = "elephant";
-	//words[2] = tmp3;
-	//char tmp4[50] = "egg";
-	//words[3] = tmp4;
-	//len = 4;
 
-	if (w_command) {
+	// TODO:get words and len from contents, ensure that word in words are unique.
+
+
+	// 构造测试集
+	char tmp1[50] = "apple";
+	words[0] = tmp1;
+	char tmp2[50] = "team";
+	words[1] = tmp2;
+	char tmp3[50] = "elephant";
+	words[2] = tmp3;
+	char tmp4[50] = "egg";
+	words[3] = tmp4;
+	len = 4;
+	
+	if (w_para) {
 		gen_chain_word(words, len, result, head, tail, enable_loop);
 	}
 	else {
@@ -239,9 +305,16 @@ void handle_command() {
 	}
 }
 
-int main()
+
+int main(int argc, char* argv[])
 {
-	handle_command();
+	bool valid_flag;
+
+	valid_flag = command_check(argc, argv);
+	if (!valid_flag)
+		return 0;
+	command_handler(argc, argv);
+
 	return 0;
 }
 
