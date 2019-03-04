@@ -3,6 +3,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
 
 using namespace std;
 
@@ -34,11 +35,31 @@ node::node(char* cur_word, int cur_word_num, int cur_character_num) {
 * return:word出现在cur_node所在链上返回true，否则返回false
 */
 bool find_in_chain(node* cur_node, char* word) {
+	char* temp_word;
+	int i = -1;
+	node* temp_node = cur_node->first_child;
+
+	while (word[i++])
+		word[i] = tolower(word[i]);
 	while (cur_node != NULL) {
-		if (strcmp(cur_node->word, word) == 0) {
+		temp_word = cur_node->word;
+		i = -1;
+		while (temp_word[i++])
+			temp_word[i] = tolower(temp_word[i]);
+		if (strcmp(temp_word, word) == 0) {
 			return true;
 		}
 		cur_node = cur_node->parent;
+	}
+	while (temp_node != NULL) {
+		temp_word = temp_node->word;
+		i = -1;
+		while (temp_word[i++])
+			temp_word[i] = tolower(temp_word[i]);
+		if (strcmp(temp_word, word) == 0) {
+			return true;
+		}
+		temp_node = temp_node->next;
 	}
 	return false;
 }
@@ -283,7 +304,7 @@ void command_handler(int argc, char* argv[]) {
 	buffer << in.rdbuf();
 	string contents(buffer.str());
 
-	// TODO:get words and len from contents, ensure that word in words are unique.
+	// TODO:get words and len from contents.
 
 
 	// 构造测试集
