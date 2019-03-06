@@ -264,7 +264,7 @@ bool command_check(int argc, char* argv[]) {
 * param:argv：指令二维数组
 * param:words：单词数组
 */
-void command_handler(int argc, char* argv[]) {
+void command_handler(int argc, const char* argv[]) {
 	char *result[10000], *words[10000];
 	char head, tail;
 	int len, index;
@@ -305,8 +305,28 @@ void command_handler(int argc, char* argv[]) {
 	string contents(buffer.str());
 
 	// TODO:get words and len from contents.
+	int i = 0, top = 0;
+	string s="";
+	while (i < contents.length()) {
+		if ((contents[i] >= 'a'&&contents[i] <= 'z') || (contents[i] >= 'A'&&contents[i] <= 'Z')) {
+			s = s + contents[i];
+		}
+		else if(s!=""){
+			words[top] = new char[s.length() + 1]();
+			strcpy(words[top++], s.c_str());
+			
+			s="";
+		}
+		i++;
+	}
+	if (s != "") {
+		words[top] = new char[s.length() + 1]();
+		strcpy(words[top++], s.c_str());
 
-
+		s = "";
+	}
+	for (int i = 0; i < top; i++)
+		cout << words[i] << endl;
 	// 构造测试集
 	char tmp1[50] = "apple";
 	words[0] = tmp1;
@@ -327,13 +347,15 @@ void command_handler(int argc, char* argv[]) {
 }
 
 
-int main(int argc, char* argv[])
+int main()//int argc, char* argv[]
 {
 	bool valid_flag;
+	int argc = 3;
+	const char* argv[3] = {"SE_wordlist.exe","-w", "file.txt"};
+	//valid_flag = command_check(argc, argv);
+	//if (!valid_flag)
+		//return 0;
 
-	valid_flag = command_check(argc, argv);
-	if (!valid_flag)
-		return 0;
 	command_handler(argc, argv);
 
 	return 0;
