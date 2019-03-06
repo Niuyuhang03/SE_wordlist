@@ -29,43 +29,38 @@ node::node(string cur_word, int cur_word_num, int cur_character_num) {
 }
 
 /*
-* 在cur_node所在链上找是否出现过word
+* 在cur_node所在链上找是否出现过lower_word
 * param:cur_node：当前节点
-* param:word：要查找的单词
-* return:word出现在cur_node所在链上返回true，否则返回false
+* param:lower_word：要查找的单词
+* return:lower_word出现在cur_node所在链上返回true，否则返回false
 */
-bool find_in_chain(node* cur_node, char* word) {
+bool find_in_chain(node* cur_node, string lower_word) {
 	string temp_word;
 	int i = 0;
-	node* temp_node = cur_node->first_child;
+	node *child_node = cur_node->first_child, *parent_node = cur_node;
 
-	while (word[i]) {
-		word[i] = tolower(word[i]);
-		i++;
-	}
-	while (cur_node != NULL) {
-		temp_word = cur_node->word;
+	while (parent_node != NULL) {
+		temp_word = parent_node->word;
 		i = 0;
 		while (temp_word[i]) {
 			temp_word[i] = tolower(temp_word[i]);
 			i++;
 		}
-		if (temp_word == word) {
+		if (temp_word == lower_word)
 			return true;
-		}
-		cur_node = cur_node->parent;
+		parent_node = parent_node->parent;
 	}
-	while (temp_node != NULL) {
-		temp_word = temp_node->word;
+	while (child_node != NULL) {
+		temp_word = child_node->word;
 		i = 0;
 		while (temp_word[i]) {
 			temp_word[i] = tolower(temp_word[i]);
 			i++;
 		}
-		if (temp_word == word) {
+		if (temp_word == lower_word) {
 			return true;
 		}
-		temp_node = temp_node->next;
+		child_node = child_node->next;
 	}
 	return false;
 }
@@ -86,17 +81,25 @@ bool gen_tree(node* cur_node, char* words[], int len, bool enable_loop, char tai
 	char cur_tail = (char)tolower(cur_node->word[cur_node->word.size() - 1]);
 	int j;
 	bool find_node, loop_flag = false, leaf_flag = true;
+	string lower_word, lower_curnode_word;
+
 	for (j = 0; j < len; j++) {
 		if (loop_flag)
 			return loop_flag;
+		lower_word = words[j];
+		transform(lower_word.begin(), lower_word.end(), lower_word.begin(), ::tolower);
 		if ((char)tolower(words[j][0]) == cur_tail) {
-			find_node = find_in_chain(cur_node, words[j]);
-			if (find_node == true && enable_loop == false) {
-				cout << "loop exists!\n";
-				loop_flag = true;
-				return loop_flag;
+			find_node = find_in_chain(cur_node, lower_word);
+			if (find_node == true) {
+				lower_curnode_word = cur_node->word;
+				transform(lower_curnode_word.begin(), lower_curnode_word.end(), lower_curnode_word.begin(), ::tolower);
+				if (enable_loop == false && lower_curnode_word != lower_word) {
+					cout << "loop exists!\n";
+					loop_flag = true;
+					return loop_flag;
+				}
 			}
-			else if (find_node == false) {
+			else {
 				leaf_flag = false;
 				if (cur_node->first_child == NULL) {
 					temp_root = new node(words[j], cur_node->word_num + 1, cur_node->character_num + strlen(words[j]));
@@ -115,9 +118,7 @@ bool gen_tree(node* cur_node, char* words[], int len, bool enable_loop, char tai
 			}
 		}
 	}
-	if (leaf_flag) {
-		if (tail != 0 && cur_node->word[cur_node->word.size() - 1] != tail)
-			return loop_flag;
+	if ((tail == 0 && leaf_flag) || (tail != 0 && tolower(cur_node->word[cur_node->word.size() - 1]) == tail)){
 		if (cur_node->character_num > char_max_node->character_num) {
 			char_max_node->word = cur_node->word;
 			char_max_node->parent = cur_node->parent;
@@ -137,8 +138,8 @@ bool gen_tree(node* cur_node, char* words[], int len, bool enable_loop, char tai
 * param:words：文件中所有单词列表
 * param:len：文件中所有单词数量
 * param:result：最长链结果列表
-* param:head：要求开头字母，无要求是为0
-* param:tail：要求结尾字母，无要求是为0
+* param:head：要求开头字母，无要求为0
+* param:tail：要求结尾字母，无要求为0
 * param:enable_loop：是否允许出现环标志，不允许成环时为false，否则为true
 * return：若没有链或enable_loop为false时出现环，返回0。否则返回环长度
 */
@@ -151,14 +152,13 @@ int gen_chain_word(char* words[], int len, char* result[], char head, char tail,
 	word_max_node = new node("", 0, 0);
 	char_max_node = new node("", 0, 0);
 	for (i = 0; i < len; i++) {
-		if (head != 0 && words[i][0] == head)
+		if (head != 0 && tolower(words[i][0]) != head)
 			continue;
 		root_node = new node(words[i], 1, strlen(words[i]));
 		root_node_list[root_node_cnt++] = root_node;
 		loop_flag = gen_tree(root_node, words, len, enable_loop, tail, word_max_node, char_max_node);
-		if (loop_flag) {
+		if (loop_flag)
 			return 0;
-		}
 	}
 
 	if (word_max_node->parent == NULL || word_max_node->word == "")
@@ -181,8 +181,8 @@ int gen_chain_word(char* words[], int len, char* result[], char head, char tail,
 * param:words：文件中所有单词列表
 * param:len：文件中所有单词数量
 * param:result：最长链结果列表
-* param:head：要求开头字母，无要求是为0
-* param:tail：要求结尾字母，无要求是为0
+* param:head：要求开头字母，无要求为0
+* param:tail：要求结尾字母，无要求为0
 * param:enable_loop：是否允许出现环标志，不允许成环时为false，否则为true
 * return：若没有链或enable_loop为false时出现环，返回0。否则返回环长度
 */
@@ -195,14 +195,13 @@ int gen_chain_char(char* words[], int len, char* result[], char head, char tail,
 	word_max_node = new node("", 0, 0);
 	char_max_node = new node("", 0, 0);
 	for (i = 0; i < len; i++) {
-		if (head != 0 && words[i][0] == head)
+		if (head != 0 && tolower(words[i][0]) != head)
 			continue;
 		root_node = new node(words[i], 1, strlen(words[i]));
 		root_node_list[root_node_cnt++] = root_node;
 		loop_flag = gen_tree(root_node, words, len, enable_loop, tail, word_max_node, char_max_node);
-		if (loop_flag) {
+		if (loop_flag)
 			return 0;
-		}
 	}
 
 	if (char_max_node->parent == NULL || char_max_node->word == "")
@@ -221,14 +220,21 @@ int gen_chain_char(char* words[], int len, char* result[], char head, char tail,
 }
 
 /*
-* 指令合法性检查
+* 处理指令
 * param:argc：指令项目个数
 * param:argv：指令二维数组
+* param:words：文件中所有单词列表
+* param:len：文件中所有单词数量
+* param:head：要求开头字母，无要求为0
+* param:tail：要求结尾字母，无要求为0
+* param:enable_loop：是否允许出现环标志，不允许成环时为false，否则为true
+* param:w_para：-w参数出现标志，用于主函数中调用不同生成链函数
 * return：指令是否合法，若合法返回true，否则返回false
 */
-bool command_check(int argc, char* argv[]) {
-	bool r_para = false, w_para = false, c_para = false, h_para = false, t_para = false, error_flag = false;
+bool command_handler(int argc, const char* argv[], char* words[], int &len, char &head, char &tail, bool &enable_loop, bool &w_para) {
+	bool error_flag = false, c_para = false;
 	int index;
+	string file_name = argv[argc - 1];
 	for (index = 1; index < argc; index++) {
 		if (error_flag)
 			break;
@@ -255,7 +261,7 @@ bool command_check(int argc, char* argv[]) {
 					break;
 				}
 				case('h'): {
-					if (h_para) {
+					if (head != 0) {
 						error_flag = true;
 						cout << "-h already exists!\n";
 						return false;
@@ -265,14 +271,12 @@ bool command_check(int argc, char* argv[]) {
 						cout << "there's no head character or file name!\n";
 						return false;
 					}
-					else {
-						index++;
-						h_para = true;
-					}
+					else
+						head = tolower(argv[++index][0]);
 					break;
 				}
 				case('t'): {
-					if (t_para) {
+					if (tail != 0) {
 						error_flag = true;
 						cout << "-t already exists!\n";
 						return false;
@@ -282,20 +286,18 @@ bool command_check(int argc, char* argv[]) {
 						cout << "there's no tail character or file name!\n";
 						return false;
 					}
-					else {
-						index++;
-						t_para = true;
-					}
+					else
+						tail = tolower(argv[++index][0]);
 					break;
 				}
 				case('r'): {
-					if (r_para) {
+					if (enable_loop) {
 						error_flag = true;
 						cout << "-r already exists!\n";
 						return false;
 					}
 					else
-						r_para = true;
+						enable_loop = true;
 					break;
 				}
 				default: {
@@ -325,113 +327,51 @@ bool command_check(int argc, char* argv[]) {
 		cout << "-w and -c all miss!\n";
 		return false;
 	}
-	return true;
-}
-
-/*
-* 解析指令
-* param:argc：指令项目个数
-* param:argv：指令二维数组
-* param:words：单词数组
-*/
-void command_handler(int argc, const char* argv[]) {
-	char *result[10000], *words[10000];
-	char head  = 0, tail = 0;
-	int len = 0, index;
-	bool enable_loop = false, w_para = false;
-	string file_name = argv[argc - 1];
-
-	for (index = 1; index < argc - 1; index++) {
-		if (argv[index][0] == '-') {
-			switch (argv[index][1]) {
-				case('w'): {
-					w_para = true;
-					break;
-				}
-				case('c'): {
-					break;
-				}
-				case('h'): {
-					index++;
-					head = argv[index][0];
-					break;
-				}
-				case('t'): {
-					index++;
-					tail = argv[index][0];
-					break;
-				}
-				case('r'): {
-					enable_loop = true;
-					break;
-				}
-			}
-		}
-	}
 
 	ifstream in(file_name);
 	ostringstream buffer;
 	buffer << in.rdbuf();
 	string contents(buffer.str());
-
-	// TODO:get words and len from contents.
 	int contents_length = contents.length();
-	string s="";
+	string s = "";
 	for (index = 0; index < contents_length; index++) {
 		if ((contents[index] >= 'a'&&contents[index] <= 'z') || (contents[index] >= 'A'&&contents[index] <= 'Z')) {
 			s = s + contents[index];
 		}
-		else if(s!=""){
+		else if (s != "") {
 			words[len] = new char[s.length() + 1]();
 			strcpy(words[len++], s.c_str());
-			s="";
+			s = "";
 		}
 	}
 	if (s != "") {
 		words[len] = new char[s.length() + 1]();
 		strcpy(words[len++], s.c_str());
 	}
-	//for (index = 0; index < len; index++) {
-	//	cout << words[index] << endl;
-	//}
-	// 构造测试集
-	//char tmp1[50] = "apple";
-	//words[0] = tmp1;
-	//char tmp2[50] = "team";
-	//words[1] = tmp2;
-	//char tmp3[50] = "elephant";
-	//words[2] = tmp3;
-	//char tmp4[50] = "egg";
-	//words[3] = tmp4;
-	//len = 4;
-	
-	if (w_para) {
-		len = gen_chain_word(words, len, result, head, tail, enable_loop);
-	}
-	else {
-		len = gen_chain_char(words, len, result, head, tail, enable_loop);
-	}
-	if (len == 0) {
-		cout << "no chain's length is greater than 1!\n";
-		return;
-	}
-	for (index = 0; index < len; index++) {
-		cout << result[index] << " " << endl;
-	}
+	return true;
 }
-
 
 int main()//int argc, char* argv[]
 {
-	bool valid_flag;
-	int argc = 3;
-	const char* argv[3] = {"SE_wordlist.exe","-c", "file.txt"};
-	//valid_flag = command_check(argc, argv);
-	//if (!valid_flag)
-		//return 0;
+	bool valid_flag, enable_loop = false, w_para = false;
+	int argc = 4, len = 0, index, chain_length;
+	const char* argv[4] = {"SE_wordlist.exe", "-r", "-w", "file.txt"};
+	char *result[10000], *words[10000];
+	char head = 0, tail = 0;
 
-	command_handler(argc, argv);
-
+	valid_flag = command_handler(argc, argv, words, len, head, tail, enable_loop, w_para);
+	if (!valid_flag)
+		return 0;
+	if (w_para)
+		chain_length = gen_chain_word(words, len, result, head, tail, enable_loop);
+	else
+		chain_length = gen_chain_char(words, len, result, head, tail, enable_loop);
+	if (chain_length < 2 && chain_length > 0) {
+		cout << "no chain's length is greater than 1!\n";
+		return 0;
+	}
+	for (index = 0; index < chain_length; index++)
+		cout << result[index] << " " << endl;
 	return 0;
 }
 
