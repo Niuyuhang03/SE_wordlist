@@ -4,20 +4,9 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
+#include "SE_wordlist.h"
 
 using namespace std;
-
-class node {
-public:
-	string word;
-	node* parent;
-	node* first_child;		// 该节点的首个子节点
-	node* next;				// 用作找其父节点的全部子节点
-	int word_num;			// 树根节点到此节点的链的单次总数
-	int character_num;		// 树根节点到此节点的链的字母总数
-	
-	node(string cur_word, int cur_word_num, int cur_character_num);
-};
 
 node::node(string cur_word, int cur_word_num, int cur_character_num) {
 	word = cur_word;
@@ -27,14 +16,6 @@ node::node(string cur_word, int cur_word_num, int cur_character_num) {
 	word_num = cur_word_num;
 	character_num = cur_character_num;
 }
-
-class Core {
-public:
-	int gen_chain_word(char* words[], int len, char* result[], char head, char tail, bool enable_loop);
-	int gen_chain_char(char* words[], int len, char* result[], char head, char tail, bool enable_loop);
-	bool gen_tree(node* cur_node, char* words[], int len, bool enable_loop, char tail, node* word_max_node, node* char_max_node);
-	bool find_in_chain(node* cur_node, string word);
-};
 
 /*
 * 在cur_node所在链上找是否出现过word
@@ -87,7 +68,6 @@ bool Core::gen_tree(node* cur_node, char* words[], int len, bool enable_loop, ch
 			find_node = find_in_chain(cur_node, words[j]);
 			if (find_node == true) {
 				if (enable_loop == false && cur_node->word != words[j]) {
-					cout << "loop exists!\n";
 					loop_flag = true;
 					return loop_flag;
 				}
@@ -111,6 +91,8 @@ bool Core::gen_tree(node* cur_node, char* words[], int len, bool enable_loop, ch
 			}
 		}
 	}
+	if (loop_flag)
+		return loop_flag;
 	if ((tail == 0 && leaf_flag) || (tail != 0 && cur_node->word[cur_node->word.size() - 1] == tail)){
 		if (cur_node->character_num > char_max_node->character_num) {
 			char_max_node->word = cur_node->word;
@@ -151,7 +133,7 @@ int Core::gen_chain_word(char* words[], int len, char* result[], char head, char
 		root_node_list[root_node_cnt++] = root_node;
 		loop_flag = gen_tree(root_node, words, len, enable_loop, tail, word_max_node, char_max_node);
 		if (loop_flag)
-			return 0;
+			return -1;
 	}
 
 	if (word_max_node->parent == NULL || word_max_node->word == "")
@@ -194,7 +176,7 @@ int Core::gen_chain_char(char* words[], int len, char* result[], char head, char
 		root_node_list[root_node_cnt++] = root_node;
 		loop_flag = gen_tree(root_node, words, len, enable_loop, tail, word_max_node, char_max_node);
 		if (loop_flag)
-			return 0;
+			return -1;
 	}
 
 	if (char_max_node->parent == NULL || char_max_node->word == "")
@@ -328,9 +310,8 @@ bool command_handler(int argc, const char* argv[], char* words[], int &len, char
 	int contents_length = contents.length();
 	string s = "";
 	for (index = 0; index < contents_length; index++) {
-		if ((contents[index] >= 'a'&&contents[index] <= 'z') || (contents[index] >= 'A'&&contents[index] <= 'Z')) {
+		if ((contents[index] >= 'a'&&contents[index] <= 'z') || (contents[index] >= 'A'&&contents[index] <= 'Z'))
 			s = s + contents[index];
-		}
 		else if (s != "") {
 			words[len] = new char[s.length() + 1]();
 			transform(s.begin(), s.end(), s.begin(), ::tolower);
@@ -345,30 +326,3 @@ bool command_handler(int argc, const char* argv[], char* words[], int &len, char
 	}
 	return true;
 }
-
-int main()//int argc, char* argv[]
-{
-	bool valid_flag, enable_loop = false, w_para = false;
-	int argc = 5, len = 0, index, chain_length;
-	const char* argv[5] = {"SE_wordlist.exe", "-h", "a", "-w", "file.txt"};
-	char *result[10000], *words[10000];
-	char head = 0, tail = 0;
-	Core core;
-
-	valid_flag = command_handler(argc, argv, words, len, head, tail, enable_loop, w_para);
-	if (!valid_flag)
-		return 0;
-	if (w_para)
-		chain_length = core.gen_chain_word(words, len, result, head, tail, enable_loop);
-	else
-		chain_length = core.gen_chain_char(words, len, result, head, tail, enable_loop);
-	
-	if (chain_length < 2 && chain_length > 0) {
-		cout << "no chain's length is greater than 1!\n";
-		return 0;
-	}
-	for (index = 0; index < chain_length; index++)
-		cout << result[index] << " " << endl;
-	return 0;
-}
-
