@@ -33,39 +33,29 @@ public:
 	int gen_chain_word(char* words[], int len, char* result[], char head, char tail, bool enable_loop);
 	int gen_chain_char(char* words[], int len, char* result[], char head, char tail, bool enable_loop);
 	bool gen_tree(node* cur_node, char* words[], int len, bool enable_loop, char tail, node* word_max_node, node* char_max_node);
-	bool find_in_chain(node* cur_node, string lower_word);
+	bool find_in_chain(node* cur_node, string word);
 };
 
 /*
-* 在cur_node所在链上找是否出现过lower_word
+* 在cur_node所在链上找是否出现过word
 * param:cur_node：当前节点
-* param:lower_word：要查找的单词
-* return:lower_word出现在cur_node所在链上返回true，否则返回false
+* param:word：要查找的单词
+* return:word出现在cur_node所在链上返回true，否则返回false
 */
-bool Core::find_in_chain(node* cur_node, string lower_word) {
+bool Core::find_in_chain(node* cur_node, string word) {
 	string temp_word;
 	int i = 0;
 	node *child_node = cur_node->first_child, *parent_node = cur_node;
 
 	while (parent_node != NULL) {
 		temp_word = parent_node->word;
-		i = 0;
-		while (temp_word[i]) {
-			temp_word[i] = tolower(temp_word[i]);
-			i++;
-		}
-		if (temp_word == lower_word)
+		if (temp_word == word)
 			return true;
 		parent_node = parent_node->parent;
 	}
 	while (child_node != NULL) {
 		temp_word = child_node->word;
-		i = 0;
-		while (temp_word[i]) {
-			temp_word[i] = tolower(temp_word[i]);
-			i++;
-		}
-		if (temp_word == lower_word) {
+		if (temp_word == word) {
 			return true;
 		}
 		child_node = child_node->next;
@@ -86,22 +76,17 @@ bool Core::find_in_chain(node* cur_node, string lower_word) {
 */
 bool Core::gen_tree(node* cur_node, char* words[], int len, bool enable_loop, char tail, node* word_max_node, node* char_max_node) {
 	node *temp_root;
-	char cur_tail = (char)tolower(cur_node->word[cur_node->word.size() - 1]);
+	char cur_tail = cur_node->word[cur_node->word.size() - 1];
 	int j;
 	bool find_node, loop_flag = false, leaf_flag = true;
-	string lower_word, lower_curnode_word;
 
 	for (j = 0; j < len; j++) {
 		if (loop_flag)
 			return loop_flag;
-		lower_word = words[j];
-		transform(lower_word.begin(), lower_word.end(), lower_word.begin(), ::tolower);
-		if ((char)tolower(words[j][0]) == cur_tail) {
-			find_node = find_in_chain(cur_node, lower_word);
+		if (words[j][0] == cur_tail) {
+			find_node = find_in_chain(cur_node, words[j]);
 			if (find_node == true) {
-				lower_curnode_word = cur_node->word;
-				transform(lower_curnode_word.begin(), lower_curnode_word.end(), lower_curnode_word.begin(), ::tolower);
-				if (enable_loop == false && lower_curnode_word != lower_word) {
+				if (enable_loop == false && cur_node->word != words[j]) {
 					cout << "loop exists!\n";
 					loop_flag = true;
 					return loop_flag;
@@ -126,7 +111,7 @@ bool Core::gen_tree(node* cur_node, char* words[], int len, bool enable_loop, ch
 			}
 		}
 	}
-	if ((tail == 0 && leaf_flag) || (tail != 0 && tolower(cur_node->word[cur_node->word.size() - 1]) == tail)){
+	if ((tail == 0 && leaf_flag) || (tail != 0 && cur_node->word[cur_node->word.size() - 1] == tail)){
 		if (cur_node->character_num > char_max_node->character_num) {
 			char_max_node->word = cur_node->word;
 			char_max_node->parent = cur_node->parent;
@@ -160,7 +145,7 @@ int Core::gen_chain_word(char* words[], int len, char* result[], char head, char
 	word_max_node = new node("", 0, 0);
 	char_max_node = new node("", 0, 0);
 	for (i = 0; i < len; i++) {
-		if (head != 0 && tolower(words[i][0]) != head)
+		if (head != 0 && words[i][0] != head)
 			continue;
 		root_node = new node(words[i], 1, strlen(words[i]));
 		root_node_list[root_node_cnt++] = root_node;
@@ -203,7 +188,7 @@ int Core::gen_chain_char(char* words[], int len, char* result[], char head, char
 	word_max_node = new node("", 0, 0);
 	char_max_node = new node("", 0, 0);
 	for (i = 0; i < len; i++) {
-		if (head != 0 && tolower(words[i][0]) != head)
+		if (head != 0 && words[i][0] != head)
 			continue;
 		root_node = new node(words[i], 1, strlen(words[i]));
 		root_node_list[root_node_cnt++] = root_node;
@@ -280,7 +265,7 @@ bool command_handler(int argc, const char* argv[], char* words[], int &len, char
 						return false;
 					}
 					else
-						head = tolower(argv[++index][0]);
+						head = argv[++index][0];
 					break;
 				}
 				case('t'): {
@@ -295,7 +280,7 @@ bool command_handler(int argc, const char* argv[], char* words[], int &len, char
 						return false;
 					}
 					else
-						tail = tolower(argv[++index][0]);
+						tail = argv[++index][0];
 					break;
 				}
 				case('r'): {
@@ -348,12 +333,14 @@ bool command_handler(int argc, const char* argv[], char* words[], int &len, char
 		}
 		else if (s != "") {
 			words[len] = new char[s.length() + 1]();
+			transform(s.begin(), s.end(), s.begin(), ::tolower);
 			strcpy(words[len++], s.c_str());
 			s = "";
 		}
 	}
 	if (s != "") {
 		words[len] = new char[s.length() + 1]();
+		transform(s.begin(), s.end(), s.begin(), ::tolower);
 		strcpy(words[len++], s.c_str());
 	}
 	return true;
@@ -375,6 +362,7 @@ int main()//int argc, char* argv[]
 		chain_length = core.gen_chain_word(words, len, result, head, tail, enable_loop);
 	else
 		chain_length = core.gen_chain_char(words, len, result, head, tail, enable_loop);
+	
 	if (chain_length < 2 && chain_length > 0) {
 		cout << "no chain's length is greater than 1!\n";
 		return 0;
