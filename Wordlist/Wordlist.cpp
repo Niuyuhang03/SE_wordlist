@@ -287,7 +287,7 @@ bool command_handler(int argc, char* argv[], char* words[], int &len, char &head
 					return false;
 				}
 				else
-					head = argv[++index][0];
+					head = tolower(argv[++index][0]);
 				break;
 			}
 			case('t'): {
@@ -302,7 +302,7 @@ bool command_handler(int argc, char* argv[], char* words[], int &len, char &head
 					return false;
 				}
 				else
-					tail = argv[++index][0];
+					tail = tolower(argv[++index][0]);
 				break;
 			}
 			case('r'): {
