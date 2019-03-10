@@ -92,9 +92,9 @@ void QtGui_Wordlist::gen_chain()
 	if (ui.radioButton_w->isChecked())
 		w_para = true;
 	if (ui.checkBox_h->isChecked())
-		head = ui.lineEdit_h->text()[0].unicode();
+		head = tolower(ui.lineEdit_h->text()[0].unicode());
 	if (ui.checkBox_t->isChecked())
-		tail = ui.lineEdit_t->text()[0].unicode();
+		tail = tolower(ui.lineEdit_t->text()[0].unicode());
 	if (ui.checkBox_r->isChecked())
 		enable_loop = true;
 
