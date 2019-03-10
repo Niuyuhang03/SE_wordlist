@@ -4,7 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
-#include "SE_wordlist.h"
+#include "Wordlist.h"
 
 using namespace std;
 
@@ -18,6 +18,13 @@ node::node(string cur_word, int cur_word_num, int cur_character_num) {
 }
 
 /*
+* 比较函数，用于对words排序
+*/
+int compare(const void *a, const void *b) {
+	return strcmp(*(char **)a, *(char **)b);
+}
+
+/*
 * 在cur_node所在链上找是否出现过word
 * param:cur_node：当前节点
 * param:word：要查找的单词
@@ -26,7 +33,8 @@ node::node(string cur_word, int cur_word_num, int cur_character_num) {
 bool Core::find_in_chain(node* cur_node, string word) {
 	string temp_word;
 	int i = 0;
-	node *child_node = cur_node->first_child, *parent_node = cur_node;
+	/*node *child_node = cur_node->first_child;*/
+	node *parent_node = cur_node;
 
 	while (parent_node != NULL) {
 		temp_word = parent_node->word;
@@ -34,13 +42,13 @@ bool Core::find_in_chain(node* cur_node, string word) {
 			return true;
 		parent_node = parent_node->parent;
 	}
-	while (child_node != NULL) {
+	/*while (child_node != NULL) {
 		temp_word = child_node->word;
 		if (temp_word == word) {
 			return true;
 		}
 		child_node = child_node->next;
-	}
+	}*/
 	return false;
 }
 
@@ -53,15 +61,16 @@ bool Core::find_in_chain(node* cur_node, string word) {
 * param:tail：要求的结尾字母
 * param:word_max_node：单词最多节点指针
 * param:char_max_node：字母最多节点指针
+* param:words_index：words的首字母索引
 * return：出现环标志，enable_loop为false且出现环则返回true，不再生成树。否则返回false
 */
-bool Core::gen_tree(node* cur_node, char* words[], int len, bool enable_loop, char tail, node* word_max_node, node* char_max_node) {
+bool Core::gen_tree(node* cur_node, char* words[], int len, bool enable_loop, char tail, node* word_max_node, node* char_max_node, int words_index[][2]) {
 	node *temp_root;
 	char cur_tail = cur_node->word[cur_node->word.size() - 1];
 	int j;
 	bool find_node, loop_flag = false, leaf_flag = true;
 
-	for (j = 0; j < len; j++) {
+	for (j = words_index[cur_tail - 'a'][0]; j <= words_index[cur_tail - 'a'][1]; j++) {
 		if (loop_flag)
 			return loop_flag;
 		if (words[j][0] == cur_tail) {
@@ -78,7 +87,8 @@ bool Core::gen_tree(node* cur_node, char* words[], int len, bool enable_loop, ch
 					temp_root = new node(words[j], cur_node->word_num + 1, cur_node->character_num + strlen(words[j]));
 					cur_node->first_child = temp_root;
 					temp_root->parent = cur_node;
-					loop_flag = gen_tree(temp_root, words, len, enable_loop, tail, word_max_node, char_max_node);
+					// cout << words[j] << "->";
+					loop_flag = gen_tree(temp_root, words, len, enable_loop, tail, word_max_node, char_max_node, words_index);
 				}
 				else {
 					temp_root = cur_node->first_child;
@@ -86,14 +96,15 @@ bool Core::gen_tree(node* cur_node, char* words[], int len, bool enable_loop, ch
 						temp_root = temp_root->next;
 					temp_root->next = new node(words[j], cur_node->word_num + 1, cur_node->character_num + strlen(words[j]));
 					temp_root->next->parent = cur_node;
-					loop_flag = gen_tree(temp_root->next, words, len, enable_loop, tail, word_max_node, char_max_node);
+					// cout << words[j] << "->";
+					loop_flag = gen_tree(temp_root->next, words, len, enable_loop, tail, word_max_node, char_max_node, words_index);
 				}
 			}
 		}
 	}
 	if (loop_flag)
 		return loop_flag;
-	if ((tail == 0 && leaf_flag) || (tail != 0 && cur_node->word[cur_node->word.size() - 1] == tail)){
+	if ((tail == 0 && leaf_flag) || (tail != 0 && cur_node->word[cur_node->word.size() - 1] == tail)) {
 		if (cur_node->character_num > char_max_node->character_num) {
 			char_max_node->word = cur_node->word;
 			char_max_node->parent = cur_node->parent;
@@ -126,14 +137,30 @@ int Core::gen_chain_word(char* words[], int len, char* result[], char head, char
 	char* pre_result[10000];
 	word_max_node = new node("", 0, 0);
 	char_max_node = new node("", 0, 0);
+
+	int words_index[26][2] = { 0 };
+	char cur_head = 0;
+	for (i = 0; i < len; i++) {
+		if (words[i][0] != cur_head) {
+			if (i != 0)
+				words_index[cur_head - 'a'][1] = i - 1;
+			cur_head = words[i][0];
+			words_index[cur_head - 'a'][0] = i;
+		}
+	}
+	words_index[cur_head - 'a'][1] = len - 1;
+
 	for (i = 0; i < len; i++) {
 		if (head != 0 && words[i][0] != head)
 			continue;
 		root_node = new node(words[i], 1, strlen(words[i]));
+		// cout << "tree " << root_node->word << " start" << endl;
+		// cout << root_node->word << "->";
 		root_node_list[root_node_cnt++] = root_node;
-		loop_flag = gen_tree(root_node, words, len, enable_loop, tail, word_max_node, char_max_node);
+		loop_flag = gen_tree(root_node, words, len, enable_loop, tail, word_max_node, char_max_node, words_index);
 		if (loop_flag)
 			return -1;
+		// cout << "tree " << root_node->word << " finished" << endl;
 	}
 
 	if (word_max_node->parent == NULL || word_max_node->word == "")
@@ -169,12 +196,25 @@ int Core::gen_chain_char(char* words[], int len, char* result[], char head, char
 	char* pre_result[10000];
 	word_max_node = new node("", 0, 0);
 	char_max_node = new node("", 0, 0);
+
+	int words_index[26][2] = { 0 };
+	char cur_head = 0;
+	for (i = 0; i < len; i++) {
+		if (words[i][0] != cur_head) {
+			if (i != 0)
+				words_index[cur_head - 'a'][1] = i - 1;
+			cur_head = words[i][0];
+			words_index[cur_head - 'a'][0] = i;
+		}
+	}
+	words_index[cur_head - 'a'][1] = len - 1;
+
 	for (i = 0; i < len; i++) {
 		if (head != 0 && words[i][0] != head)
 			continue;
 		root_node = new node(words[i], 1, strlen(words[i]));
 		root_node_list[root_node_cnt++] = root_node;
-		loop_flag = gen_tree(root_node, words, len, enable_loop, tail, word_max_node, char_max_node);
+		loop_flag = gen_tree(root_node, words, len, enable_loop, tail, word_max_node, char_max_node, words_index);
 		if (loop_flag)
 			return -1;
 	}
@@ -206,7 +246,7 @@ int Core::gen_chain_char(char* words[], int len, char* result[], char head, char
 * param:w_para：-w参数出现标志，用于主函数中调用不同生成链函数
 * return：指令是否合法，若合法返回true，否则返回false
 */
-bool command_handler(int argc, const char* argv[], char* words[], int &len, char &head, char &tail, bool &enable_loop, bool &w_para) {
+bool command_handler(int argc, char* argv[], char* words[], int &len, char &head, char &tail, bool &enable_loop, bool &w_para) {
 	bool error_flag = false, c_para = false;
 	int index;
 	string file_name = argv[argc - 1];
@@ -215,71 +255,71 @@ bool command_handler(int argc, const char* argv[], char* words[], int &len, char
 			break;
 		if (argv[index][0] == '-' && index != argc - 1 && strlen(argv[index]) == 2) {
 			switch (argv[index][1]) {
-				case('w'): {
-					if (w_para | c_para) {
-						error_flag = true;
-						cout << "-w or -c already exists!\n";
-						return false;
-					}
-					else
-						w_para = true;
-					break;
-				}
-				case('c'): {
-					if (w_para | c_para) {
-						error_flag = true;
-						cout << "-w or -c already exists!\n";
-						return false;
-					}
-					else
-						c_para = true;
-					break;
-				}
-				case('h'): {
-					if (head != 0) {
-						error_flag = true;
-						cout << "-h already exists!\n";
-						return false;
-					}
-					else if (index + 1 == argc - 1 || strlen(argv[index + 1]) > 1) {
-						error_flag = true;
-						cout << "there's no head character or file name!\n";
-						return false;
-					}
-					else
-						head = argv[++index][0];
-					break;
-				}
-				case('t'): {
-					if (tail != 0) {
-						error_flag = true;
-						cout << "-t already exists!\n";
-						return false;
-					}
-					else if (index + 1 == argc - 1 || strlen(argv[index + 1]) > 1) {
-						error_flag = true;
-						cout << "there's no tail character or file name!\n";
-						return false;
-					}
-					else
-						tail = argv[++index][0];
-					break;
-				}
-				case('r'): {
-					if (enable_loop) {
-						error_flag = true;
-						cout << "-r already exists!\n";
-						return false;
-					}
-					else
-						enable_loop = true;
-					break;
-				}
-				default: {
+			case('w'): {
+				if (w_para | c_para) {
 					error_flag = true;
-					cout << "parameter invalid!\n";
+					cout << "-w or -c already exists!\n";
 					return false;
 				}
+				else
+					w_para = true;
+				break;
+			}
+			case('c'): {
+				if (w_para | c_para) {
+					error_flag = true;
+					cout << "-w or -c already exists!\n";
+					return false;
+				}
+				else
+					c_para = true;
+				break;
+			}
+			case('h'): {
+				if (head != 0) {
+					error_flag = true;
+					cout << "-h already exists!\n";
+					return false;
+				}
+				else if (index + 1 == argc - 1 || strlen(argv[index + 1]) > 1) {
+					error_flag = true;
+					cout << "there's no head character or file name!\n";
+					return false;
+				}
+				else
+					head = argv[++index][0];
+				break;
+			}
+			case('t'): {
+				if (tail != 0) {
+					error_flag = true;
+					cout << "-t already exists!\n";
+					return false;
+				}
+				else if (index + 1 == argc - 1 || strlen(argv[index + 1]) > 1) {
+					error_flag = true;
+					cout << "there's no tail character or file name!\n";
+					return false;
+				}
+				else
+					tail = argv[++index][0];
+				break;
+			}
+			case('r'): {
+				if (enable_loop) {
+					error_flag = true;
+					cout << "-r already exists!\n";
+					return false;
+				}
+				else
+					enable_loop = true;
+				break;
+			}
+			default: {
+				error_flag = true;
+				cout << "parameter invalid!\n";
+				return false;
+			}
 			}
 		}
 		else if (index == argc - 1) {
@@ -324,5 +364,13 @@ bool command_handler(int argc, const char* argv[], char* words[], int &len, char
 		transform(s.begin(), s.end(), s.begin(), ::tolower);
 		strcpy(words[len++], s.c_str());
 	}
+	qsort(words, len, sizeof(words[0]), compare);
+	int cnt = 1;
+	for (index = 1; index < len; index++) {
+		if (strcmp(words[index], words[index - 1]) != 0) {
+			strcpy(words[cnt++], words[index]);
+		}
+	}
+	len = cnt;
 	return true;
 }

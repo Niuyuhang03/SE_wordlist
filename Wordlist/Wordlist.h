@@ -19,6 +19,10 @@ class Core {
 public:
 	int gen_chain_word(char* words[], int len, char* result[], char head, char tail, bool enable_loop);
 	int gen_chain_char(char* words[], int len, char* result[], char head, char tail, bool enable_loop);
-	bool gen_tree(node* cur_node, char* words[], int len, bool enable_loop, char tail, node* word_max_node, node* char_max_node);
+	bool gen_tree(node* cur_node, char* words[], int len, bool enable_loop, char tail, node* word_max_node, node* char_max_node, int words_index[][2]);
 	bool find_in_chain(node* cur_node, string word);
 };
+
+bool command_handler(int argc, char* argv[], char* words[], int &len, char &head, char &tail, bool &enable_loop, bool &w_para);
+
+int compare(const void *a, const void *b);
