@@ -1,11 +1,11 @@
 #include "pch.h"
 #include <iostream>
-#include <string>
 #include <fstream>
 #include <sstream>
 #include <algorithm>
 #include "Wordlist.h"
 #include <time.h>
+#include "Core.h"
 
 int main(int argc, char* argv[])//int argc, char* argv[]
 {
