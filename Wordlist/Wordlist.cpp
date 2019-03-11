@@ -4,7 +4,7 @@
 #include <sstream>
 #include <algorithm>
 #include "Wordlist.h"
-#include "Core.h"
+#include "../Core/Core.h"
 
 using namespace std;
 

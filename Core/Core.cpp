@@ -143,13 +143,10 @@ int Core::gen_chain_word(char* words[], int len, char* result[], char head, char
 		if (head != 0 && words[i][0] != head)
 			continue;
 		root_node = new node(words[i], 1, int(strlen(words[i])));
-		// cout << "tree " << root_node->word << " start" << endl;
-		// cout << root_node->word << "->";
 		root_node_list[root_node_cnt++] = root_node;
 		loop_flag = gen_tree(root_node, words, len, enable_loop, tail, word_max_node, char_max_node, words_index);
 		if (loop_flag)
 			return -1;
-		// cout << "tree " << root_node->word << " finished" << endl;
 	}
 
 	if (word_max_node->parent == NULL || word_max_node->word == "")

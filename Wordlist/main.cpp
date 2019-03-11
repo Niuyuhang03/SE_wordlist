@@ -5,7 +5,7 @@
 #include <algorithm>
 #include "Wordlist.h"
 #include <time.h>
-#include "Core.h"
+#include "../Core/Core.h"
 
 int main(int argc, char* argv[])//int argc, char* argv[]
 {
