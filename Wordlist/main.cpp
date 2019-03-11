@@ -25,11 +25,11 @@ int main(int argc, char* argv[])//int argc, char* argv[]
 	else
 		chain_length = core.gen_chain_char(words, len, result, head, tail, enable_loop);
 	if (chain_length == -1) {
-		cout << "loop exists!\n";
+		cout << "loop exists!";
 		return 0;
 	}
 	if (chain_length < 2 && chain_length >= 0) {
-		cout << "no chain's length is greater than 1!\n";
+		cout << "no chain's length is greater than 1!";
 		return 0;
 	}
 	ofstream outfile;

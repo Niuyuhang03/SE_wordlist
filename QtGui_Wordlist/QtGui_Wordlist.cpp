@@ -81,6 +81,10 @@ void QtGui_Wordlist::gen_chain()
 		transform(s.begin(), s.end(), s.begin(), ::tolower);
 		strcpy(words[len++], s.c_str());
 	}
+	if (len == 0) {
+		ui.textEdit_result->setPlainText("no word exists!\n");
+		return;
+	}
 	qsort(words, len, sizeof(words[0]), compare);
 	int cnt = 1;
 	for (index = 1; index < len; index++) {
