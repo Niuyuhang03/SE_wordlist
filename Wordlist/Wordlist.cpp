@@ -9,13 +9,6 @@
 using namespace std;
 
 /*
-* 比较函数，用于对words排序
-*/
-int compare(const void *a, const void *b) {
-	return strcmp(*(char **)a, *(char **)b);
-}
-
-/*
 * 处理指令
 * param:argc：指令项目个数
 * param:argv：指令二维数组
@@ -149,13 +142,5 @@ bool command_handler(int argc, char* argv[], char* words[], int &len, char &head
 		cout << "no words in file!";
 		return false;
 	}
-	qsort(words, len, sizeof(words[0]), compare);
-	int cnt = 1;
-	for (index = 1; index < len; index++) {
-		if (strcmp(words[index], words[index - 1]) != 0) {
-			strcpy_s(words[cnt++], strlen(words[index]) + 1, words[index]);
-		}
-	}
-	len = cnt;
 	return true;
 }

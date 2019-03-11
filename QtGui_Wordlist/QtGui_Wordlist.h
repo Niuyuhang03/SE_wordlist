@@ -16,5 +16,3 @@ public slots:
 private:
 	Ui::QtGui_WordlistClass ui;
 };
-
-int compare_it(const void *a, const void *b);

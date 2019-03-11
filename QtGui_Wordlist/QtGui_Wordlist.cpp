@@ -15,13 +15,6 @@ QtGui_Wordlist::QtGui_Wordlist(QWidget *parent)
 	connect(ui.pushButton_save_in_file, SIGNAL(clicked()), this, SLOT(save_file()));
 }
 
-/*
-* 比较函数，用于对words排序
-*/
-int compare_it(const void *a, const void *b) {
-	return strcmp(*(char **)a, *(char **)b);
-}
-
 void QtGui_Wordlist::gen_chain()
 {
 	QString file_name = "";
@@ -92,14 +85,7 @@ void QtGui_Wordlist::gen_chain()
 		ui.textEdit_result->setPlainText("no word exists!\n");
 		return;
 	}
-	qsort(words, len, sizeof(words[0]), compare_it);
-	int cnt = 1;
-	for (index = 1; index < len; index++) {
-		if (strcmp(words[index], words[index - 1]) != 0) {
-			strcpy(words[cnt++], words[index]);
-		}
-	}
-	len = cnt;
+
 	if (ui.radioButton_w->isChecked())
 		w_para = true;
 	if (ui.checkBox_h->isChecked())

@@ -14,6 +14,13 @@ node::node(string cur_word, int cur_word_num, int cur_character_num) {
 }
 
 /*
+* 比较函数，用于对words排序
+*/
+int compare(const void *a, const void *b) {
+	return strcmp(*(char **)a, *(char **)b);
+}
+
+/*
 * 在cur_node所在链上找是否出现过word
 * param:cur_node：当前节点
 * param:word：要查找的单词
@@ -127,6 +134,15 @@ int Core::gen_chain_word(char* words[], int len, char* result[], char head, char
 	word_max_node = new node("", 0, 0);
 	char_max_node = new node("", 0, 0);
 
+	qsort(words, len, sizeof(words[0]), compare);
+	int cnt = 1;
+	for (i = 1; i < len; i++) {
+		if (strcmp(words[i], words[i - 1]) != 0) {
+			strcpy_s(words[cnt++], strlen(words[i]) + 1, words[i]);
+		}
+	}
+	len = cnt;
+
 	int words_index[26][2] = { 0 };
 	char cur_head = 'a';
 	for (i = 0; i < len; i++) {
@@ -182,6 +198,15 @@ int Core::gen_chain_char(char* words[], int len, char* result[], char head, char
 	char* pre_result[10000];
 	word_max_node = new node("", 0, 0);
 	char_max_node = new node("", 0, 0);
+
+	qsort(words, len, sizeof(words[0]), compare);
+	int cnt = 1;
+	for (i = 1; i < len; i++) {
+		if (strcmp(words[i], words[i - 1]) != 0) {
+			strcpy_s(words[cnt++], strlen(words[i]) + 1, words[i]);
+		}
+	}
+	len = cnt;
 
 	int words_index[26][2] = { 0 };
 	char cur_head = 'a';

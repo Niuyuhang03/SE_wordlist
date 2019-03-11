@@ -22,3 +22,5 @@ public:
 	__declspec(dllexport) bool gen_tree(node* cur_node, char* words[], int len, bool enable_loop, char tail, node* word_max_node, node* char_max_node, int words_index[][2]);
 	__declspec(dllexport) bool find_in_chain(node* cur_node, string word);
 };
+
+int compare(const void *a, const void *b);
