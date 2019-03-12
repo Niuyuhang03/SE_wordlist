@@ -42,13 +42,25 @@ void QtGui_Wordlist::gen_chain()
 		ui.textEdit_result->setPlainText("please input words!");
 		return;
 	}
-	if (ui.checkBox_h->isChecked() && (ui.lineEdit_h->text().size() > 1 || ui.lineEdit_h->text().size() == 0)) {
-		ui.textEdit_result->setPlainText("-h parameter is empty or too long!");
-		return;
+	if (ui.checkBox_h->isChecked()) {
+		if (ui.lineEdit_h->text().size() > 1 || ui.lineEdit_h->text().size() == 0) {
+			ui.textEdit_result->setPlainText("-h parameter is empty or too long!");
+			return;
+		}
+		else if (ui.lineEdit_h->text()[0].unicode() < 'A' || (ui.lineEdit_h->text()[0].unicode() > 'Z' && ui.lineEdit_h->text()[0].unicode() < 'a') || ui.lineEdit_h->text()[0].unicode() > 'z') {
+			ui.textEdit_result->setPlainText("head invalid!");
+			return;
+		}
 	}
-	if (ui.checkBox_t->isChecked() && (ui.lineEdit_t->text().size() > 1 || ui.lineEdit_t->text().size() == 0)) {
-		ui.textEdit_result->setPlainText("-t parameter is empty or too long!");
-		return;
+	if (ui.checkBox_t->isChecked()) {
+		if (ui.lineEdit_t->text().size() > 1 || ui.lineEdit_t->text().size() == 0) {
+			ui.textEdit_result->setPlainText("-t parameter is empty or too long!");
+			return;
+		}
+		else if (ui.lineEdit_t->text()[0].unicode() < 'A' || (ui.lineEdit_t->text()[0].unicode() > 'Z' && ui.lineEdit_t->text()[0].unicode() < 'a') || ui.lineEdit_t->text()[0].unicode() > 'z') {
+			ui.textEdit_result->setPlainText("tail invalid!");
+			return;
+		}
 	}
 	ui.textEdit_result->setPlainText("");
 

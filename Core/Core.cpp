@@ -135,13 +135,13 @@ int Core::gen_chain_word(char* words[], int len, char* result[], char head, char
 	char_max_node = new node("", 0, 0);
 
 	qsort(words, len, sizeof(words[0]), compare);
-	int cnt = 1;
+	/*int cnt = 1;
 	for (i = 1; i < len; i++) {
 		if (strcmp(words[i], words[i - 1]) != 0) {
 			strcpy_s(words[cnt++], strlen(words[i]) + 1, words[i]);
 		}
 	}
-	len = cnt;
+	len = cnt;*/
 
 	int words_index[26][2] = { 0 };
 	char cur_head = 'a';
@@ -200,13 +200,13 @@ int Core::gen_chain_char(char* words[], int len, char* result[], char head, char
 	char_max_node = new node("", 0, 0);
 
 	qsort(words, len, sizeof(words[0]), compare);
-	int cnt = 1;
+	/*int cnt = 1;
 	for (i = 1; i < len; i++) {
 		if (strcmp(words[i], words[i - 1]) != 0) {
 			strcpy_s(words[cnt++], strlen(words[i]) + 1, words[i]);
 		}
 	}
-	len = cnt;
+	len = cnt;*/
 
 	int words_index[26][2] = { 0 };
 	char cur_head = 'a';
