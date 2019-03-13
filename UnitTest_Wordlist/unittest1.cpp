@@ -53,7 +53,20 @@ namespace UnitTest1
 			Assert::AreEqual(core_test.gen_chain_word(words, len, result, head, 's', true), 3);
 			char* words[5] = { "aj", "hdfdrs", "jhgjh", "kjhjh", "sdfghj" };
 			Assert::IsTrue(core_test.gen_tree(node1, words, len, false, 0, word_max_node, char_max_node, words_index));
-
+			try
+			{
+				core_test.gen_chain_char(words, len, result, head, tail, false);
+				Assert::IsTrue(false);
+			}
+			catch(struct LoopException &e)
+			{
+				Assert::IsTrue(true);
+			}
+			catch(...)
+			{
+				Assert::IsTrue(false);
+			}
+			
 
 
 		}
@@ -157,6 +170,87 @@ namespace UnitTest1
 			
 			
 		}
+		TEST_METHOD(UnitTest_gen_chain_word_and_char2)
+		{
+			// TODO: 在此输入测试代码
+			//disable
+			node1 = new node(cur_word, cur_word_num, cur_character_num);
+			word_max_node = new node("", 0, 0);
+			char_max_node = new node("", 0, 0);
+			char head = 0, tail = 0;
+			int len = 1;
+			//able
+			char* words[7] = { "ajsdjfhkhlkjhlakjshduhcuhuhuhuhvuhjhdkajsdfnajksdjkfhksdjahkjdhjdhje" };
+			try
+			{
+				Assert::AreEqual(core_test.gen_chain_char(words, len, result, head, tail, true), 2);
+				
+				Assert::IsTrue(false);
+			}
+			catch (struct ChainLessThen2Exception &e)
+			{
+				Assert::IsTrue(true);
+			}
+			catch (...)
+			{
+				Assert::IsTrue(false);
+			}
+
+		}
+
+		TEST_METHOD(UnitTest_command_line15)
+		{
+			// TODO: 在此输入测试代码
+			node1 = new node(cur_word, cur_word_num, cur_character_num);
+			word_max_node = new node("", 0, 0);
+			char_max_node = new node("", 0, 0);
+			char head = 0, tail = 0;
+			int len = 1;
+			//able
+			char* words[7] = { "ajsdjfhkhlkjhlakjshduhcuhuhuhuhvuhjhdkajsdfnajksdjkfhksdjahkjdhjdhje" };
+			try
+			{
+				Assert::AreEqual(core_test.gen_chain_char(words, len, result, 1, tail, true), 2);
+
+				Assert::IsTrue(false);
+			}
+			catch (struct HeadInvalidException &e)
+
+			{
+				Assert::IsTrue(true);
+			}
+			catch (...)
+			{
+				Assert::IsTrue(false);
+			}
+		}
+		TEST_METHOD(UnitTest_command_line16)
+		{
+			// TODO: 在此输入测试代码
+			node1 = new node(cur_word, cur_word_num, cur_character_num);
+			word_max_node = new node("", 0, 0);
+			char_max_node = new node("", 0, 0);
+			char head = 0, tail = 0;
+			int len = 1;
+			//able
+			char* words[7] = { "ajsdjfhkhlkjhlakjshduhcuhuhuhuhvuhjhdkajsdfnajksdjkfhksdjahkjdhjdhje" };
+			try
+			{
+				Assert::AreEqual(core_test.gen_chain_char(words, len, result, head, 2, true), 2);
+
+				Assert::IsTrue(false);
+			}
+			catch (struct TailInvalidException &e)
+
+			{
+				Assert::IsTrue(true);
+			}
+			catch (...)
+			{
+				Assert::IsTrue(false);
+			}
+		}
+
 	};
 
 
@@ -268,6 +362,8 @@ namespace UnitTest1
 			char* argv[3] = { "Wordlist.exe", "-r","../Wordlist/file.txt" };
 			Assert::IsFalse(command_handler(argc, argv, words, len, head, tail, enable_loop, w_para));
 		}
+		
+
 	};
 
 
