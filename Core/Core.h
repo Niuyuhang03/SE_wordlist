@@ -3,6 +3,38 @@
 
 using namespace std;
 
+struct HeadInvalidException : public exception
+{
+	const char * what() const throw ()
+	{
+		return "head is invalid!";
+	}
+};
+
+struct TailInvalidException : public exception
+{
+	const char * what() const throw ()
+	{
+		return "tail is invalid!";
+	}
+};
+
+struct LoopException : public exception
+{
+	const char * what() const throw ()
+	{
+		return "loop exists!";
+	}
+};
+
+struct ChainLessThen2Exception : public exception
+{
+	const char * what() const throw ()
+	{
+		return "length of chain is less than 2!";
+	}
+};
+
 class node {
 public:
 	string word;
