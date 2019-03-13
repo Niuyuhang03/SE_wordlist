@@ -60,11 +60,6 @@ bool command_handler(int argc, char* argv[], char* words[], int &len, char &head
 					cout << "there's no head character or file name!";
 					return false;
 				}
-				else if (argv[index + 1][0] < 'A' || (argv[index + 1][0] > 'Z' && argv[index + 1][0] < 'a') || argv[index + 1][0] > 'z') {
-					error_flag = true;
-					cout << "head invalid!";
-					return false;
-				}
 				else
 					head = tolower(argv[++index][0]);
 				break;
@@ -78,11 +73,6 @@ bool command_handler(int argc, char* argv[], char* words[], int &len, char &head
 				else if (index + 1 == argc - 1 || strlen(argv[index + 1]) > 1) {
 					error_flag = true;
 					cout << "there's no tail character or file name!";
-					return false;
-				}
-				else if (argv[index + 1][0] < 'A' || (argv[index + 1][0] > 'Z' && argv[index + 1][0] < 'a') || argv[index + 1][0] > 'z') {
-					error_flag = true;
-					cout << "tail invalid!";
 					return false;
 				}
 				else

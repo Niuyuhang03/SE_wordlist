@@ -1,6 +1,6 @@
 ﻿#include "stdafx.h"
 #include "Core.h"
-#include <Windows.h>
+#include "iostream"
 
 using namespace std;
 
@@ -123,7 +123,7 @@ bool Core::gen_tree(node* cur_node, char* words[], int len, bool enable_loop, ch
 * param:head：要求开头字母，无要求为0
 * param:tail：要求结尾字母，无要求为0
 * param:enable_loop：是否允许出现环标志，不允许成环时为false，否则为true
-* return：若没有链或enable_loop为false时出现环，返回0。否则返回环长度
+* return：返回环长度
 */
 int Core::gen_chain_word(char* words[], int len, char* result[], char head, char tail, bool enable_loop) {
 	int max_length = 0, cur_length = 0, i, root_node_cnt = 0;
@@ -133,6 +133,12 @@ int Core::gen_chain_word(char* words[], int len, char* result[], char head, char
 	char* pre_result[10000];
 	word_max_node = new node("", 0, 0);
 	char_max_node = new node("", 0, 0);
+
+	if (head != 0 && (head < 'A' || (head > 'Z' && head < 'A') || head > 'z'))
+		throw HeadInvalidException();
+
+	if (tail != 0 && (tail < 'A' || (tail > 'Z' && tail < 'A') || tail > 'z'))
+		throw TailInvalidException();
 
 	qsort(words, len, sizeof(words[0]), compare);
 	/*int cnt = 1;
@@ -162,11 +168,11 @@ int Core::gen_chain_word(char* words[], int len, char* result[], char head, char
 		root_node_list[root_node_cnt++] = root_node;
 		loop_flag = gen_tree(root_node, words, len, enable_loop, tail, word_max_node, char_max_node, words_index);
 		if (loop_flag)
-			return -1;
+			throw LoopException();
 	}
 
 	if (word_max_node->parent == NULL || word_max_node->word == "")
-		return 0;
+		throw ChainLessThen2Exception();
 	int top = -1;
 	while (word_max_node != NULL) {
 		pre_result[++top] = new char[word_max_node->word.length() + 1]();
@@ -177,6 +183,8 @@ int Core::gen_chain_word(char* words[], int len, char* result[], char head, char
 		result[i] = new char[strlen(pre_result[top - i])]();
 		strcpy_s(result[i], strlen(pre_result[top - i]) + 1, pre_result[top - i]);
 	}
+	if (top + 1 < 2)
+		throw ChainLessThen2Exception();
 	return top + 1;
 }
 
@@ -188,7 +196,7 @@ int Core::gen_chain_word(char* words[], int len, char* result[], char head, char
 * param:head：要求开头字母，无要求为0
 * param:tail：要求结尾字母，无要求为0
 * param:enable_loop：是否允许出现环标志，不允许成环时为false，否则为true
-* return：若没有链或enable_loop为false时出现环，返回0。否则返回环长度
+* return：返回环长度
 */
 int Core::gen_chain_char(char* words[], int len, char* result[], char head, char tail, bool enable_loop) {
 	int max_length = 0, cur_length = 0, i, root_node_cnt = 0;
@@ -198,6 +206,12 @@ int Core::gen_chain_char(char* words[], int len, char* result[], char head, char
 	char* pre_result[10000];
 	word_max_node = new node("", 0, 0);
 	char_max_node = new node("", 0, 0);
+
+	if (head != 0 && (head < 'A' || (head > 'Z' && head < 'A') || head > 'z'))
+		throw HeadInvalidException();
+
+	if (tail != 0 && (tail < 'A' || (tail > 'Z' && tail < 'A') || tail > 'z'))
+		throw TailInvalidException();
 
 	qsort(words, len, sizeof(words[0]), compare);
 	/*int cnt = 1;
@@ -227,11 +241,11 @@ int Core::gen_chain_char(char* words[], int len, char* result[], char head, char
 		root_node_list[root_node_cnt++] = root_node;
 		loop_flag = gen_tree(root_node, words, len, enable_loop, tail, word_max_node, char_max_node, words_index);
 		if (loop_flag)
-			return -1;
+			throw LoopException();
 	}
 
 	if (char_max_node->parent == NULL || char_max_node->word == "")
-		return 0;
+		throw ChainLessThen2Exception();
 	int top = -1;
 	while (char_max_node != NULL) {
 		pre_result[++top] = new char[char_max_node->word.length() + 1]();
@@ -242,5 +256,7 @@ int Core::gen_chain_char(char* words[], int len, char* result[], char head, char
 		result[i] = new char[strlen(pre_result[top - i])]();
 		strcpy_s(result[i], strlen(pre_result[top - i]) + 1, pre_result[top - i]);
 	}
+	if (top + 1 < 2)
+		throw ChainLessThen2Exception();
 	return top + 1;
 }

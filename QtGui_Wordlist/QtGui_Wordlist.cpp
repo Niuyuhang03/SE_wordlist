@@ -47,18 +47,10 @@ void QtGui_Wordlist::gen_chain()
 			ui.textEdit_result->setPlainText("-h parameter is empty or too long!");
 			return;
 		}
-		else if (ui.lineEdit_h->text()[0].unicode() < 'A' || (ui.lineEdit_h->text()[0].unicode() > 'Z' && ui.lineEdit_h->text()[0].unicode() < 'a') || ui.lineEdit_h->text()[0].unicode() > 'z') {
-			ui.textEdit_result->setPlainText("head invalid!");
-			return;
-		}
 	}
 	if (ui.checkBox_t->isChecked()) {
 		if (ui.lineEdit_t->text().size() > 1 || ui.lineEdit_t->text().size() == 0) {
 			ui.textEdit_result->setPlainText("-t parameter is empty or too long!");
-			return;
-		}
-		else if (ui.lineEdit_t->text()[0].unicode() < 'A' || (ui.lineEdit_t->text()[0].unicode() > 'Z' && ui.lineEdit_t->text()[0].unicode() < 'a') || ui.lineEdit_t->text()[0].unicode() > 'z') {
-			ui.textEdit_result->setPlainText("tail invalid!");
 			return;
 		}
 	}
@@ -75,7 +67,6 @@ void QtGui_Wordlist::gen_chain()
 	}
 	else
 		contents = string((const char *)ui.lineEdit_words->text().toLocal8Bit());
-	ui.textEdit_result->setPlainText(QString::fromStdString(contents));
 	int contents_length = contents.length(), index;
 	string s = "";
 	for (index = 0; index < contents_length; index++) {
@@ -106,19 +97,29 @@ void QtGui_Wordlist::gen_chain()
 		tail = tolower(ui.lineEdit_t->text()[0].unicode());
 	if (ui.checkBox_r->isChecked())
 		enable_loop = true;
+	try {
+		if (w_para)
+			chain_length = core.gen_chain_word(words, len, result, head, tail, enable_loop);
+		else
+			chain_length = core.gen_chain_char(words, len, result, head, tail, enable_loop);
+	}
+	catch (HeadInvalidException& e) {
+		ui.textEdit_result->append(e.what());
+		return;
+	}
+	catch (TailInvalidException& e) {
+		ui.textEdit_result->append(e.what());
+		return;
+	}
+	catch (LoopException& e) {
+		ui.textEdit_result->append(e.what());
+		return;
+	}
+	catch (ChainLessThen2Exception& e) {
+		ui.textEdit_result->append(e.what());
+		return;
+	}
 
-	if (w_para)
-		chain_length = core.gen_chain_word(words, len, result, head, tail, enable_loop);
-	else
-		chain_length = core.gen_chain_char(words, len, result, head, tail, enable_loop);
-	if (chain_length == -1) {
-		ui.textEdit_result->setPlainText("loop exists!\n");
-		return;
-	}
-	if (chain_length < 2 && chain_length >= 0) {
-		ui.textEdit_result->setPlainText("no chain's length is greater than 1!");
-		return;
-	}
 	ui.textEdit_result->setPlainText("");
 	for (index = 0; index < chain_length; index++) {
 		ui.textEdit_result->append(result[index]);
