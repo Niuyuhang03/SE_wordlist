@@ -238,7 +238,7 @@ namespace UnitTest1
 			{
 				Assert::AreEqual(core_test.gen_chain_char(words, len, result, head, 2, true), 2);
 
-				Assert::IsTrue(false);
+				Assert::IsTrue(false); 
 			}
 			catch (struct TailInvalidException &e)
 
