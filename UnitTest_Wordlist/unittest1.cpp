@@ -2,7 +2,7 @@
 #include "CppUnitTest.h"
 #include <iostream>
 #include "../Wordlist/Wordlist.h"
-
+#include "../Core/Core.h"
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace UnitTest1
@@ -151,9 +151,11 @@ namespace UnitTest1
 			char head = 0, tail = 0;
 			int len = 7;
 			//able
-			char* words[7] = { "ajsdjfhkhlkjhlakjshduhcuhuhuhuhvuhjhdkajsdfnajksdjkfhksdjahkjdhjdhje","ei", "jhgjh","hjhjbdkjhaksjdfhkjhkjhjd" ,"hdfdrp","pd","ddfghj" };
-			Assert::AreEqual(core_test.gen_chain_word(words, len, result, head, tail, true), 5);
+			char* words[7] = { "ajsdjfhkhlkjhlakjshduhcuhuhuhuhvuhjhdkajsdfnajksdjkfhksdjahkjdhjdhje","ddfghj","ei","hdfdrp", "hjhjbdkjhaksjd","jhgjh" ,"pd" };
 			Assert::AreEqual(core_test.gen_chain_char(words, len, result, head, tail, true), 2);
+			Assert::AreEqual(core_test.gen_chain_word(words, len, result, head, tail, true), 5);
+			
+			
 		}
 	};
 
